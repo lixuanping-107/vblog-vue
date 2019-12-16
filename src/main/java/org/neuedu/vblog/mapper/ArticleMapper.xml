@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.neuedu.vblog.mapper.ArticleMapper">
+    <resultMap id="ArticleInfos" type="org.neuedu.vblog.model.Article">
+        <id column="aid" property="id"></id>
+        <result column="title" property="title"></result>
+        <result column="updatetime" property="updatetime"></result>
+        <association property="user" javaType="org.neuedu.vblog.model.UserBean">
+            <id column="uid" property="id"></id>
+            <result column="nickname" property="nickname"></result>
+        </association>
+        <association property="column" javaType="org.neuedu.vblog.model.Column">
+            <id column="cid" property="id"></id>
+            <result column="colname" property="colname"></result>
+        </association>
+    </resultMap>
+    <select id="getAllArticles" resultMap="ArticleInfos">
+        select a.id as aid,title,u.id as uid,nickname,updatetime,c.id as cid,colname
+        from article a
+        join user u
+        on a.uid = u.id
+        join `column` c
+        on c.id = a.cid
+        <where>
+            <if test="status != null and status != 0 and status != -1">
+                and status = #{status}
+            </if>
+            <if test="keywords != null and keywords != ''">
+                and title like concat('%',#{keywords},'%')
+            </if>
+            <if test="uid != null and status != -1">
+                and uid = #{uid}
+            </if>
+        </where>
+    </select>
+
+    <delete id="delMangArticle">
+        delete from article
+        where id in
+        <foreach collection="ids" item="id" close=")" open="(" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+    <insert id="addArticle">
+       insert into `article`(cid,hmcontent,mdcontent,uid,status,title)
+        values (#{cid},#{hmcontent},#{mdcontent},#{uid},#{status},#{title})
+    </insert>
+    <resultMap id="Base" type="org.neuedu.vblog.model.Article">
+        <id property="id" column="id"></id>
+        <result property="title" column="title"></result>
+        <result property="hmcontent" column="hmcontent"></result>
+        <result property="mdcontent" column="mdcontent"></result>
+        <result property="updatetime" column="updatetime"></result>
+        <result property="cid" column="cid"></result>
+        <result property="views" column="views"></result>
+        <association property="user" javaType="org.neuedu.vblog.model.UserBean">
+            <result property="nickname" column="nickname"></result>
+        </association>
+    </resultMap>
+    <select id="getArtByAid" resultMap="Base">
+        select title,hmcontent,nickname,views,updatetime,a.id,mdcontent,cid
+        from article a
+        join user u
+        on a.uid = u.id
+        where a.id = #{aid}
+    </select>
+
+    <update id="updateArtById">
+      update article
+      set status = 3
+      where id=#{id}
+    </update>
+
+    <delete id="delArtById">
+       delete from article
+       where id=#{id}
+    </delete>
+
+    <update id="updateArtContent">
+        update `article`
+        set title=#{title},mdcontent=#{mdcontent},hmcontent=#{hmcontent},cid=#{cid}
+        where id=#{id}
+    </update>
+
+    <update id="updateViewsById">
+       update `article`
+       set views = views + 1
+       where id=#{id}
+    </update>
+
+</mapper>

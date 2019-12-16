@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.neuedu.vblog.mapper.UserMapper">
+    <select id="loadUserByUsername" resultType="org.neuedu.vblog.model.User">
+        select *
+        from user
+        where username=#{username}
+    </select>
+
+    <select id="getRolesById" resultType="org.neuedu.vblog.model.Role">
+        select *
+        from role
+        where id in(select rid from user_role where uid=#{id})
+    </select>
+
+    <select id="getAllUser" resultType="org.neuedu.vblog.model.UserBean">
+        select *
+        from user
+        <where>
+            <if test="nickname != null">
+                nickname like '%${nickname}%'
+            </if>
+        </where>
+    </select>
+
+    <delete id="delUserById">
+        delete from user
+        where id= #{id}
+    </delete>
+
+    <update id="updateUserById">
+        update user
+        set enabled=#{enabled}
+        where id=#{id}
+    </update>
+</mapper>
